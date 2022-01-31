@@ -65,7 +65,7 @@ fn main() {
 
         match check_winner(&board) {
             State::EMPTY => (),
-            player => winner = player,
+            player       => winner = player,
         }
 
         // Swap turn.
@@ -123,9 +123,7 @@ fn move_player(board: &mut Board, turn: State) -> InputStatus {
 
     let r: usize = match r {
         1|2|3 => (r - 1) as usize,
-        _     => {
-            return InputStatus::InvalidRowVal;
-        }
+        _     => return InputStatus::InvalidRowVal,
     };
 
     // Extract column value from the user input.
@@ -140,9 +138,7 @@ fn move_player(board: &mut Board, turn: State) -> InputStatus {
 
     let c: usize = match c {
         1|2|3 => (c - 1) as usize,
-        _     => {
-            return InputStatus::InvalidColVal;
-        }
+        _     => return InputStatus::InvalidColVal,
     };
 
     if board[r][c] != State::EMPTY {
