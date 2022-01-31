@@ -84,10 +84,9 @@ fn main() {
 }
 
 // Based on the turn value, either Player X or Player O will move.
-// If the given move is valid, update the board and return true to
+// If the given move is valid, update the board and return Success to
 // the calling function (which signals the given input is valid).
-// If not, then return false so the current player can choose his/her
-// move again.
+// If not, then return an appropriate error message to the calling function.
 fn move_player(board: &mut Board, turn: State) -> InputStatus {
     println!("\n");
     match turn {
