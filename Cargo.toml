@@ -1,8 +1,11 @@
 [package]
-name = "tictactoe"
+name = "xox"
+description = "Tic-tac-toe in Rust."
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Gabriel Kenneth L. Marinas <gabrielkennethmarinas@gmail.com>"]
+keywords = ["game", "cli", "2-player"]
+repository = "https://github.com/marshblocker/xox"
+license = "MIT"
 
 [dependencies]
