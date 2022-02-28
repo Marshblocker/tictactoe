@@ -24,17 +24,17 @@ enum InputStatus {
 enum State {
     X,
     O,
-    EMPTY,
+    Empty,
 }
 
 type Board = [[State; COLS]; ROWS];
 
 fn main() {
-    let mut board: Board = [[State::EMPTY; COLS]; ROWS];
+    let mut board: Board = [[State::Empty; COLS]; ROWS];
     let mapping = HashMap::from([
         (State::X, 'X'),
         (State::O, 'O'),
-        (State::EMPTY, ' '),
+        (State::Empty, ' '),
     ]);
 
     // Increments when a valid move is made. If its value becomes 9,
@@ -47,8 +47,8 @@ fn main() {
     clear_screen();
     print_board(&board, &mapping);
 
-    let mut winner = State::EMPTY;
-    while winner == State::EMPTY && valid_moves != 9 {
+    let mut winner = State::Empty;
+    while winner == State::Empty && valid_moves != 9 {
         let status = move_player(&mut board, turn);
 
         if status != InputStatus::Success {
@@ -64,7 +64,7 @@ fn main() {
         print_board(&board, &mapping);
 
         match check_winner(&board) {
-            State::EMPTY => (),
+            State::Empty => (),
             player       => winner = player,
         }
 
@@ -72,14 +72,14 @@ fn main() {
         turn = match turn {
             State::X     => State::O,
             State::O     => State::X,
-            State::EMPTY => panic!("Invalid turn value!"),
+            State::Empty => panic!("Invalid turn value!"),
         };
     }
 
     match winner {
         State::X     => println!("\nPlayer X wins!"),
         State::O     => println!("\nPlayer O wins!"),
-        State::EMPTY => println!("\nDraw!"), // When valid_moves == 9.
+        State::Empty => println!("\nDraw!"), // When valid_moves == 9.
     }
 }
 
@@ -92,7 +92,7 @@ fn move_player(board: &mut Board, turn: State) -> InputStatus {
     match turn {
         State::X => println!("Player X turn."),
         State::O => println!("Player O turn."),
-        State::EMPTY => panic!("Invalid turn value!"),
+        State::Empty => panic!("Invalid turn value!"),
     }
 
     println!("Input your move in 'rowcol' format (e.g. '11' or '33'):");
@@ -141,7 +141,7 @@ fn move_player(board: &mut Board, turn: State) -> InputStatus {
         _     => return InputStatus::InvalidColVal,
     };
 
-    if board[r][c] != State::EMPTY {
+    if board[r][c] != State::Empty {
         return InputStatus::GridOccupied;
     }
 
@@ -149,10 +149,10 @@ fn move_player(board: &mut Board, turn: State) -> InputStatus {
     match turn {
         State::X     => board[r][c] = State::X,
         State::O     => board[r][c] = State::O,
-        State::EMPTY => panic!("Invalid turn value."),
+        State::Empty => panic!("Invalid turn value."),
     }
 
-    return InputStatus::Success;
+    InputStatus::Success
 } 
 
 fn print_input_status(status: InputStatus) {
@@ -199,8 +199,8 @@ fn print_board(board: &Board, mapping: &HashMap<State, char>) {
 
 fn check_winner(board: &Board) -> State {
     // Check per-row win condition.
-    for r in 0..ROWS {
-        match board[r][..] {
+    for row in board {
+        match row {
             [State::X, State::X, State::X] => return State::X,
             [State::O, State::O, State::O] => return State::O,
             [..]                           => (),
@@ -209,10 +209,16 @@ fn check_winner(board: &Board) -> State {
 
     // Check per-column win condition.
     for c in 0..COLS {
-        match board[..][c] {
+        let mut col = [State::Empty; 3];
+
+        for r in 0..ROWS {
+            col[r] = board[r][c];
+        }
+
+        match col {
             [State::X, State::X, State::X] => return State::X,
             [State::O, State::O, State::O] => return State::O,
-            [..]                           => (),                        
+            [..]                           => (),    
         };
     }
 
@@ -233,9 +239,199 @@ fn check_winner(board: &Board) -> State {
     [..]                           => (),                        
     };
 
-    return State::EMPTY; 
+    State::Empty
 }
 
 fn clear_screen() {
     println!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn row_winner() {
+        let board = [
+            [State::X; COLS],
+            [State::Empty; COLS],
+            [State::Empty; COLS],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty; COLS],
+            [State::X; COLS],
+            [State::Empty; COLS],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty; COLS],
+            [State::Empty; COLS],
+            [State::X; COLS],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::O; COLS],
+            [State::Empty; COLS],
+            [State::Empty; COLS],
+        ];
+
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty; COLS],
+            [State::O; COLS],
+            [State::Empty; COLS],
+        ];
+
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty; COLS],
+            [State::Empty; COLS],
+            [State::O; COLS],
+        ];
+
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+    }
+
+    #[test]
+    fn col_winner() {
+        let board = [
+            [State::X, State::Empty, State::Empty],
+            [State::X, State::Empty, State::Empty],
+            [State::X, State::Empty, State::Empty],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty, State::X, State::Empty],
+            [State::Empty, State::X, State::Empty],
+            [State::Empty, State::X, State::Empty],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty, State::Empty, State::X],
+            [State::Empty, State::Empty, State::X],
+            [State::Empty, State::Empty, State::X],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::O, State::Empty, State::Empty],
+            [State::O, State::Empty, State::Empty],
+            [State::O, State::Empty, State::Empty],
+        ];
+    
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+    
+        let board = [
+            [State::Empty, State::O, State::Empty],
+            [State::Empty, State::O, State::Empty],
+            [State::Empty, State::O, State::Empty],
+        ];
+    
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+    
+        let board = [
+            [State::Empty, State::Empty, State::O],
+            [State::Empty, State::Empty, State::O],
+            [State::Empty, State::Empty, State::O],
+        ];
+    
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+    }
+
+    #[test]
+    fn diag_winner() {
+        let board = [
+            [State::X, State::Empty, State::Empty],
+            [State::Empty, State::X, State::Empty],
+            [State::Empty, State::Empty, State::X],
+        ];
+
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty, State::Empty, State::X],
+            [State::Empty, State::X, State::Empty],
+            [State::X, State::Empty, State::Empty],
+        ];
+    
+        assert_eq!(
+            State::X,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::O, State::Empty, State::Empty],
+            [State::Empty, State::O, State::Empty],
+            [State::Empty, State::Empty, State::O],
+        ];
+
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+
+        let board = [
+            [State::Empty, State::Empty, State::O],
+            [State::Empty, State::O, State::Empty],
+            [State::O, State::Empty, State::Empty],
+        ];
+    
+        assert_eq!(
+            State::O,
+            check_winner(&board)
+        );
+    }
 }
